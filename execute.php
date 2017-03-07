@@ -60,6 +60,10 @@ if(preg_match('/^\/launch/', $origText)){
 		$response = 'Have you lost your dice? 😆';
 	}
 }
+else{
+	// not understand command
+	$response = 'Sorry, but I did not understand 😕';
+}
 
 header("Content-Type: application/json");
 $parameters = array('chat_id' => $chatId, "text" => $response, "parse_mode" => 'HTML');
