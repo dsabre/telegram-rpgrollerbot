@@ -13,16 +13,16 @@ $firstname = isset($message['chat']['first_name']) ? $message['chat']['first_nam
 $lastname = isset($message['chat']['last_name']) ? $message['chat']['last_name'] : "";
 $username = isset($message['chat']['username']) ? $message['chat']['username'] : "";
 $date = isset($message['date']) ? $message['date'] : "";
-$text = isset($message['text']) ? $message['text'] : "";
+$origText = isset($message['text']) ? $message['text'] : "";
 
-$text = trim($text);
-$text = strtolower($text);
+$origText = trim($origText);
+$origText = strtolower($origText);
 
 $response = '';
 
 // launch command
-if(preg_match('/^\/launch/', $text)){
-	$text = str_replace('/launch', '', $text);
+if(preg_match('/^\/launch/', $origText)){
+	$text = str_replace('/launch', '', $origText);
 	$text = trim($text);
 	
 	if(!empty($text)){
@@ -30,17 +30,31 @@ if(preg_match('/^\/launch/', $text)){
 		$countLaunches = (int)$info[0];
 		$diceType = (int)$info[1];
 		
-		$results = [];
-		$total = 0;
-		for($i = 0; $i < $countLaunches; $i++){
-			$result = (int)rand(1, $diceType);
-			$results[] = $result;
+		if($countLaunches > 1){
+			$results = [];
+			$total = 0;
+			for($i = 0; $i < $countLaunches; $i++){
+				$result = (int)rand(1, $diceType);
+				$results[] = $result;
+				
+				$total += $result;
+			}
 			
-			$total += $result;
+			$results = implode(', ', $results);
+			$response = sprintf("Results: %s%sTotal: <b>%s</b>" , $results, PHP_EOL, $total);
 		}
-		
-		$results = implode(', ', $results);
-		$response = sprintf("Results: %s%sTotal: %s" , $results, PHP_EOL, $total);
+		else{
+			$result = (int)rand(1, $diceType);
+			$response = sprintf("Result: <b>%s</b>" , $result);
+			
+			// add some flavour texts
+			if($result == $diceType && $diceType != 20){
+				$response .= '! Excellent! 😏';
+			}
+			elseif($result == $diceType && $diceType == 20){
+				$response .= '!! You underestimate my power! 😎';
+			}
+		}
 	}
 	else{
 		$response = 'Have you lost your dice? 😆';
