@@ -62,6 +62,6 @@ if(preg_match('/^\/launch/', $origText)){
 }
 
 header("Content-Type: application/json");
-$parameters = array('chat_id' => $chatId, "text" => $response);
+$parameters = array('chat_id' => $chatId, "text" => $response, "parse_mode" => 'HTML');
 $parameters["method"] = "sendMessage";
 echo json_encode($parameters);
