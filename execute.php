@@ -49,10 +49,10 @@ if(preg_match('/^\/launch/', $origText)){
 			
 			// add some flavour texts
 			if($result == $diceType && $diceType != 20){
-				$response .= '! Excellent! 😏';
+				$response .= sprintf('!%sExcellent! 😏', PHP_EOL);
 			}
 			elseif($result == $diceType && $diceType == 20){
-				$response .= '!! You underestimate my power! 😎';
+				$response .= sprintf('!!%sYou underestimate my power! 😎', PHP_EOL);
 			}
 		}
 	}
