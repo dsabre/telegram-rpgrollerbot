@@ -24,21 +24,27 @@ $response = '';
 if(preg_match('/^\/launch/', $text)){
 	$text = str_replace('/launch', '', $text);
 	$text = trim($text);
-	$info = explode('d', $text);
-	$countLaunches = (int)$info[0];
-	$diceType = (int)$info[1];
 	
-	$results = [];
-	$total = 0;
-	for($i = 0; $i < $countLaunches; $i++){
-		$result = (int)rand(1, $diceType);
-		$results[] = $result;
+	if(!empty($text)){
+		$info = explode('d', $text);
+		$countLaunches = (int)$info[0];
+		$diceType = (int)$info[1];
 		
-		$total += $result;
+		$results = [];
+		$total = 0;
+		for($i = 0; $i < $countLaunches; $i++){
+			$result = (int)rand(1, $diceType);
+			$results[] = $result;
+			
+			$total += $result;
+		}
+		
+		$results = implode(', ', $results);
+		$response = sprintf("Results: %s%sTotal: %s" , $results, PHP_EOL, $total);
 	}
-	
-	$results = implode(', ', $results);
-	$response = sprintf("Results: %s%sTotal: %s" , $results, PHP_EOL, $total);
+	else{
+		$response = 'Have you lost your dice? 😆';
+	}
 }
 
 header("Content-Type: application/json");
