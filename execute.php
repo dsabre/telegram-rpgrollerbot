@@ -1,71 +1,21 @@
 <?php
-$content = file_get_contents("php://input");
-$update = json_decode($content, true);
 
-if(!$update){
+require_once 'classes/RPGRollerBot.php';
+
+$input = file_get_contents("php://input");
+$input = '{"update_id":364632588,"message":{"message_id":56,"from":{"id":30343769,"first_name":"Daniele","last_name":"Sabre","username":"Wuzzifuzz"},"chat":{"id":30343769,"first_name":"Daniele","last_name":"Sabre","username":"Wuzzifuzz","type":"private"},"date":1488908870,"text":"/start"}}';
+$input = '';
+
+try{
+	$rpgrollerbot = new RPGRollerBot($input);
+	
+	header("Content-Type: application/json");
+	
+	$parameters = $rpgrollerbot->execCommand();
+	$parameters["method"] = "sendMessage";
+	
+	echo json_encode($parameters);
+}
+catch(\Exception $exc){
 	exit;
 }
-
-$message = isset($update['message']) ? $update['message'] : "";
-$messageId = isset($message['message_id']) ? $message['message_id'] : "";
-$chatId = isset($message['chat']['id']) ? $message['chat']['id'] : "";
-$firstname = isset($message['chat']['first_name']) ? $message['chat']['first_name'] : "";
-$lastname = isset($message['chat']['last_name']) ? $message['chat']['last_name'] : "";
-$username = isset($message['chat']['username']) ? $message['chat']['username'] : "";
-$date = isset($message['date']) ? $message['date'] : "";
-$origText = isset($message['text']) ? $message['text'] : "";
-
-$origText = trim($origText);
-$origText = strtolower($origText);
-
-$response = '';
-
-// launch command
-if(preg_match('/^\/launch/', $origText)){
-	$text = str_replace('/launch', '', $origText);
-	$text = trim($text);
-	
-	if(!empty($text)){
-		$info = explode('d', $text);
-		$countLaunches = (int)$info[0];
-		$diceType = (int)$info[1];
-		
-		if($countLaunches > 1){
-			$results = [];
-			$total = 0;
-			for($i = 0; $i < $countLaunches; $i++){
-				$result = (int)rand(1, $diceType);
-				$results[] = $result;
-				
-				$total += $result;
-			}
-			
-			$results = implode(', ', $results);
-			$response = sprintf("Results: %s%sTotal: <b>%s</b>" , $results, PHP_EOL, $total);
-		}
-		else{
-			$result = (int)rand(1, $diceType);
-			$response = sprintf("Result: <b>%s</b>" , $result);
-			
-			// add some flavour texts
-			if($result == $diceType && $diceType != 20){
-				$response .= sprintf('!%sExcellent! 😏', PHP_EOL);
-			}
-			elseif($result == $diceType && $diceType == 20){
-				$response .= sprintf('!!%sYou underestimate my power! 😎', PHP_EOL);
-			}
-		}
-	}
-	else{
-		$response = 'Have you lost your dice? 😆';
-	}
-}
-else{
-	// not understand command
-	$response = 'Sorry, but I did not understand 😕';
-}
-
-header("Content-Type: application/json");
-$parameters = array('chat_id' => $chatId, "text" => $response, "parse_mode" => 'HTML');
-$parameters["method"] = "sendMessage";
-echo json_encode($parameters);
