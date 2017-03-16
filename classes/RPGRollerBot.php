@@ -3,7 +3,8 @@
 class RPGRollerBot{
 	
 	const START_COMMAND = '/start';
-	const LAUNCH_COMMAND = '/launch';
+	const LAUNCH_PATTERN = '/^((\d+d\d+|\d)\+?){1,}$/';
+	const DICE_PATTERN = '/^\d+d\d+$/';
 	const PARSE_MODE = 'HTML';
 	
 	/**
@@ -94,7 +95,7 @@ class RPGRollerBot{
 	 * @throws Exception
 	 */
 	public function execCommand(){
-		if(preg_match('/^\\' . self::LAUNCH_COMMAND . '/', $this->text)){
+		if(preg_match(self::LAUNCH_PATTERN, $this->text)){
 			$response = $this->launchCommand();
 		}
 		elseif(preg_match('/^\\' . self::START_COMMAND . '/', $this->text)){
@@ -117,45 +118,86 @@ class RPGRollerBot{
 	 * @return string
 	 */
 	private function launchCommand(){
-		$text = str_replace(self::LAUNCH_COMMAND, '', $this->text);
-		$text = trim($text);
+		$response = null;
+		$rolls = explode('+', $this->text);
+		$results = [];
 		
-		if(!empty($text)){
-			$info = explode('d', $text);
-			$countLaunches = (int)$info[0];
-			$diceType = (int)$info[1];
-			
-			if($countLaunches > 1){
-				$results = [];
-				$total = 0;
-				for($i = 0; $i < $countLaunches; $i++){
-					$result = (int)rand(1, $diceType);
-					$results[] = $result;
-					
-					$total += $result;
-				}
-				
-				$results = implode(', ', $results);
-				$response = sprintf("Results: %s%sTotal: <b>%s</b>", $results, PHP_EOL, $total);
+		// cycle on items to get the results
+		foreach($rolls as $roll){
+			// check if is a dice roll
+			if(preg_match(self::DICE_PATTERN, $roll)){
+				$results[] = $this->rollDice($roll);
 			}
 			else{
-				$result = (int)rand(1, $diceType);
-				$response = sprintf("Result: <b>%s</b>", $result);
-				
-				// add some flavour texts
-				if($result == $diceType && $diceType != 20){
-					$response .= sprintf('!%sExcellent! 😏', PHP_EOL);
-				}
-				elseif($result == $diceType && $diceType == 20){
-					$response .= sprintf('!!%sYou underestimate my power! 😎', PHP_EOL);
-				}
+				// this is not a dice roll, then insert the value directly on
+				// the results array
+				$results[] = (int)$roll;
 			}
 		}
+		
+		// obtain the result total
+		$total = array_sum($results);
+		
+		// if there's more than one roll then create a string with all the
+		// values
+		if(count($rolls) > 1){
+			$response = implode('+', $results) . ' = <b>' . $total . '</b>';
+		}
 		else{
-			$response = 'Have you lost your dice? 😆';
+			$response = 'Result is: <b>' . $total . '</b>';
+			
+			// get the roll info
+			$info = $this->getRollInfo($rolls[0]);
+			
+			// if i have only one roll insert some flavour texts if necessary
+			if($total == $info['diceType'] && $info['diceType'] != 20){
+				$response .= sprintf('!%sExcellent! 😏', PHP_EOL);
+			}
+			elseif($total == $info['diceType'] && $info['diceType'] == 20){
+				$response .= sprintf('!!%sYou underestimate my power! 😎', PHP_EOL);
+			}
 		}
 		
 		return $response;
+	}
+	
+	/**
+	 * Roll a dice
+	 *
+	 * @param string $roll
+	 *
+	 * @return int
+	 */
+	private function rollDice($roll){
+		$total = 0;
+		$info = $this->getRollInfo($roll);
+		
+		for($i = 0; $i < $info['countLaunches']; $i++){
+			$result = (int)rand(1, $info['diceType']);
+			$results[] = $result;
+			
+			$total += $result;
+		}
+		
+		return $total;
+	}
+	
+	/**
+	 * Return the roll info from string
+	 *
+	 * @param string $roll
+	 *
+	 * @return array
+	 *
+	 * @author Daniele Sabre 16/mar/2017
+	 */
+	private function getRollInfo($roll){
+		$info = explode('d', $roll);
+		
+		return [
+			'countLaunches' => (int)$info[0],
+			'diceType' => (int)$info[1]
+		];
 	}
 	
 	/**
