@@ -106,10 +106,29 @@ class RPGRollerBot{
 		}
 		
 		return array(
-			'chat_id'    => $this->chatId,
-			'text'       => $response,
-			'parse_mode' => self::PARSE_MODE
+			'chat_id'      => $this->chatId,
+			'text'         => $response,
+			'parse_mode'   => self::PARSE_MODE,
+			'method'       => 'sendMessage',
+			'reply_markup' => $this->getKeyboard()
 		);
+	}
+	
+	/**
+	 * Return the keyboard to use
+	 * @return string
+	 *
+	 * @author Daniele Sabre 17/mar/2017
+	 */
+	private function getKeyboard(){
+		return json_encode([
+			'keyboard'          => [
+				['1d3', '1d4', '1d6'],
+				['1d8', '1d10', '1d20'],
+			],
+			'one_time_keyboard' => false,
+			'resize_keyboard'   => true,
+		]);
 	}
 	
 	/**
@@ -196,7 +215,7 @@ class RPGRollerBot{
 		
 		return [
 			'countLaunches' => (int)$info[0],
-			'diceType' => (int)$info[1]
+			'diceType'      => (int)$info[1]
 		];
 	}
 	
