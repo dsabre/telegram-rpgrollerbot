@@ -3,6 +3,7 @@
 class RPGRollerBot{
 	
 	const START_COMMAND = '/start';
+	const START_MESSAGE = 'Let the games begin! 😏';
 	const LAUNCH_PATTERN = '/^((\d+d\d+|\d)\+?){1,}$/';
 	const DICE_PATTERN = '/^\d+d\d+$/';
 	const PARSE_MODE = 'HTML';
@@ -99,7 +100,7 @@ class RPGRollerBot{
 			$response = $this->launchCommand();
 		}
 		elseif(preg_match('/^\\' . self::START_COMMAND . '/', $this->text)){
-			throw new Exception('Command disabled');
+			$response = self::START_MESSAGE;
 		}
 		else{
 			$response = $this->notUnderstandCommand();
@@ -169,11 +170,13 @@ class RPGRollerBot{
 			// get the roll info
 			$info = $this->getRollInfo($rolls[0]);
 			
+			$maxValue = $info['countLaunches'] * $info['diceType'];
+			
 			// if i have only one roll insert some flavour texts if necessary
-			if($total == $info['diceType'] && $info['diceType'] != 20){
+			if($total == $maxValue && $info['diceType'] != 20){
 				$response .= sprintf('!%sExcellent! 😏', PHP_EOL);
 			}
-			elseif($total == $info['diceType'] && $info['diceType'] == 20){
+			elseif($total == $maxValue && $info['diceType'] == 20){
 				$response .= sprintf('!!%sYou underestimate my power! 😎', PHP_EOL);
 			}
 		}
