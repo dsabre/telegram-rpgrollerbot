@@ -124,8 +124,8 @@ class RPGRollerBot{
 	private function getKeyboard(){
 		return json_encode([
 			'keyboard'          => [
-				['1d2', '1d3', '1d4'],
-				['1d6', '1d8', '1d10'],
+				['1d3', '1d4', '1d6'],
+				['1d8', '1d10', '1d100'],
 				['1d20']
 			],
 			'one_time_keyboard' => false,
